@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 10px;
+      display: grid;
+      place-items: center;
+      background-image: url('disney-cars-on-the-road-poster-373an9c9zyfz611m.jpg');
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+    }
+
+    .calculator {
+      width: 250px;
+      padding: 20px;
+      border-radius: 16px;
+      background: transparent;
+      box-shadow: 0 8px 24px rgba(160, 159, 159, 0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .display {
+      box-sizing: border-box;
+      width: 100%;
+      height: 70px;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 0;
+      border-radius: 8px;
+      background: #e8b1f6;
+      color: #222;
+      font-size: 28px;
+      text-align: right;
+      outline: none;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    button {
+      height: 50px;
+      border: 0;
+      border-radius: 8px;
+      background: #939691;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0eda0a;
+    }
+
+    .operator {
+      background: #059cfb;
+    }
+
+    .clear {
+      background: #f33333;
+    }
+
+    .equals {
+      background: #171718;
+      grid-row: span 2;
+      height: auto;
+    }
+
+    .zero {
+      grid-column: span 2;
+      background: #f9b804;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="calculator">
+
+    <!-- You can type numbers or text directly in this display -->
+    <input
+      class="display"
+      type="text"
+      aria-label="Calculator display"
+      value="0"
+      placeholder=""
+      autocomplete="off"
+    >
+
+    <div class="buttons">
+      <button class="clear">AC</button>
+      <button class="operator" data-action="sign">±</button>
+      <button class="operator" data-action="operator">/</button>
+      <button class="operator" data-action="operator">×</button>
+
+      <button data-action="number">7</button>
+      <button data-action="number">8</button>
+      <button data-action="number">9</button>
+      <button class="operator" data-action="operator">-</button>
+
+      <button data-action="number">4</button>
+      <button data-action="number">5</button>
+      <button data-action="number">6</button>
+      <button class="operator" data-action="operator">+</button>
+
+      <button data-action="number">1</button>
+      <button data-action="number">2</button>
+      <button data-action="number">3</button>
+      <button class="equals">=</button>
+
+      <button class="zero" data-action="number">0</button>
+      <button class="operator" data-action="number">.</button>
+    </div>
+
+  </main>
+
+  <script>
+    const display = document.querySelector(".display");
+    const buttons = document.querySelectorAll(".buttons button");
+
+    let firstNumber = null;
+    let operator = null;
+    let waitingForSecondNumber = false;
+
+    // Handle calculator button clicks
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        const value = button.textContent.trim();
+
+        // Clear everything
+        if (value === "AC") {
+          display.value = "0";
+          firstNumber = null;
+          operator = null;
+          waitingForSecondNumber = false;
+          return;
+        }
+
+        // Enter a number or decimal point
+        if (button.dataset.action === "number") {
+          if (waitingForSecondNumber || display.value === "0") {
+            display.value = value === "." ? "0." : value;
+            waitingForSecondNumber = false;
+          } else if (value === "." && display.value.includes(".")) {
+            return;
+          } else {
+            display.value += value;
+          }
+          return;
+        }
+
+        // Change positive to negative or negative to positive
+        if (button.dataset.action === "sign") {
+          const number = Number(display.value);
+
+          if (display.value.trim() !== "" && Number.isFinite(number)) {
+            display.value = String(number * -1);
+          }
+          return;
+        }
+
+        // Choose an operator
+        if (button.dataset.action === "operator") {
+          const number = Number(display.value);
+
+          if (display.value.trim() === "" || !Number.isFinite(number)) {
+            display.value = "Enter a number";
+            return;
+          }
+
+          firstNumber = number;
+          operator = value;
+          waitingForSecondNumber = true;
+          return;
+        }
+
+        // Calculate the answer
+        if (value === "=") {
+          if (firstNumber === null || operator === null) {
+            return;
+          }
+
+          const secondNumber = Number(display.value);
+
+          if (display.value.trim() === "" || !Number.isFinite(secondNumber)) {
+            display.value = "Invalid input";
+            return;
+          }
+
+          let result;
+
+          switch (operator) {
+            case "+":
+              result = firstNumber + secondNumber;
+              break;
+
+            case "-":
+              result = firstNumber - secondNumber;
+              break;
+
+            case "×":
+              result = firstNumber * secondNumber;
+              break;
+
+            case "/":
+              result = secondNumber === 0
+                ? "Cannot divide by 0"
+                : firstNumber / secondNumber;
+              break;
+          }
+
+          display.value = String(result);
+          firstNumber = null;
+          operator = null;
+          waitingForSecondNumber = true;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
